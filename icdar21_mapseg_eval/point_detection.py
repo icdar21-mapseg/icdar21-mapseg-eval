@@ -33,6 +33,9 @@ def eval_pt_detect(
     f = transfer_fn
     if f is None:
         f = __identity
+    
+    count_expected = len(expected)
+    count_predicted = len(predicted)
 
     # Step 1: identify closest expected points and the distance to them
     pred_to_targets, distances = vq(predicted, expected)
@@ -40,7 +43,7 @@ def eval_pt_detect(
 
     # Step 2: compute f_beta score as we increase the distance tolerance to consider matches as good
     # `seen`: Internal state to check whether we already matched some ground truth point
-    seen = np.zeros(len(expected), dtype=np.bool)
+    seen = np.zeros(count_expected, dtype=np.bool)
 
     # Loop over predicted points
     area = 0.0
@@ -84,10 +87,10 @@ def eval_pt_detect(
             seen[tid] = True
         # Count errors
         tp = np.sum(seen)
-        fn = len(expected) - tp
-        fp = len(predicted) - tp
-        precision = tp / len(predicted)
-        recall = tp / len(expected)
+        fn = count_expected - tp
+        fp = count_predicted - tp
+        precision = (tp / count_predicted) if count_predicted != 0 else 0
+        recall = (tp / count_expected) if count_expected != 0 else 0
         f_score = f_beta(tp, fn, fp, beta)
         # Save values
         pred_xs.append(pred_x)
@@ -107,7 +110,7 @@ def eval_pt_detect(
             dy = (ay + prev_ay) / 2
             area += dx * dy
             dbg_print(
-                f"\ttp:{tp:3d}, fn:{fn:3d}, fp:{fp:3d}, |expt|:{len(expected)}, |pred|:{len(predicted)},"
+                f"\ttp:{tp:3d}, fn:{fn:3d}, fp:{fp:3d}, |expt|:{count_expected}, |pred|:{count_predicted},"
                 f" x:{ax:.2f}, y:{ay:.2f}, area:{area:.3f}"
             )
             prev_ax = ax
