@@ -33,7 +33,7 @@ def eval_pt_detect(
     f = transfer_fn
     if f is None:
         f = __identity
-    
+
     count_expected = len(expected)
     count_predicted = len(predicted)
 
