@@ -28,7 +28,7 @@ def task_02(A, B):
 
     if mode == "dir":
         A = sorted(A.glob("*-OUTPUT-GT.png"))
-        B = sorted(B.glob("*-OUTPUT-GT.png"))
+        B = sorted(B.glob("*-OUTPUT-GT.png"))  # FIXME GT -> PRED (tolerate both?)
 
         A_stems = [str(x.name) for x in A]
         B_stems = [str(x.name) for x in B]
