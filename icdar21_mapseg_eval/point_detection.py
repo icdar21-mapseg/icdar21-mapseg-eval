@@ -43,7 +43,7 @@ def eval_pt_detect(
 
     # Step 2: compute f_beta score as we increase the distance tolerance to consider matches as good
     # `seen`: Internal state to check whether we already matched some ground truth point
-    seen = np.zeros(count_expected, dtype=np.bool)
+    seen = np.zeros(count_expected, dtype=bool)
 
     # Loop over predicted points
     area = 0.0
