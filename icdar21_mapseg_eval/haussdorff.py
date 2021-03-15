@@ -3,7 +3,6 @@ import skimage.morphology as morph
 from scipy.ndimage import distance_transform_edt as edt
 
 
-
 def hausdorff(A: np.ndarray, B: np.ndarray, percentile=95):
 
     """
@@ -28,7 +27,9 @@ def hausdorff(A: np.ndarray, B: np.ndarray, percentile=95):
     if not A.shape == B.shape:
         raise ValueError(f"A and B have incompatible shape {A.shape} vs {B.shape}")
     if not 0 <= percentile <= 100:
-        raise ValueError(f"Percentile shall be between 0 and 100 (current is {percentile})")
+        raise ValueError(
+            f"Percentile shall be between 0 and 100 (current is {percentile})"
+        )
     h, w = A.shape
 
     A = np.asarray(A, dtype=bool)
@@ -44,38 +45,38 @@ def hausdorff(A: np.ndarray, B: np.ndarray, percentile=95):
 
     B_095 = np.percentile(EA[ext_grad_B], q=percentile)
     A_095 = np.percentile(EB[ext_grad_A], q=percentile)
-    #print("A percentile {:.2f}".format(A_095))
-    #print("B percentile {:.2f}".format(B_095))
+    # print("A percentile {:.2f}".format(A_095))
+    # print("B percentile {:.2f}".format(B_095))
     return max(A_095, B_095)
 
 
-
-
-
-
 def test_haussdorf():
-    A = np.array([
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ], dtype=bool)
+    A = np.array(
+        [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ],
+        dtype=bool,
+    )
 
-    B = np.array([
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-    ], dtype=bool)
+    B = np.array(
+        [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
+        ],
+        dtype=bool,
+    )
 
-
-
-    assert(hausdorff(A, B, percentile=100) == ((2 * 3**2) ** 0.5))
+    assert hausdorff(A, B, percentile=100) == ((2 * 3 ** 2) ** 0.5)
