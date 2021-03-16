@@ -189,37 +189,42 @@ def task_03(A, B, output):
             json.dump(data, outfile)
 
 
-parser = argparse.ArgumentParser(prog="icdar21-mapseg-eval")
-subparsers = parser.add_subparsers()
-
-# TASK 02
-parser_a = subparsers.add_parser("T1", help="Task 1 - Detect Building Blocks")
-parser_a.add_argument("A", help="Path to the reference segmentation")
-parser_a.add_argument("B", help="Path to the predicted segmentation")
-parser_a.set_defaults(task=1)
 
 
-# TASK 02
-parser_b = subparsers.add_parser("T2", help="Task 2 - Segment Map Content Area")
-parser_b.add_argument("A", help="Path to the reference segmentation")
-parser_b.add_argument("B", help="Path to the predicted segmentation")
-parser_b.set_defaults(task=2)
 
-# TASK 03
-parser_b = subparsers.add_parser("T3", help="Task 3 - Detect graticule lines intersections")
-parser_b.add_argument("A", help="Path to the reference detection")
-parser_b.add_argument("B", help="Path to the predicted detection")
-parser_b.add_argument("output", help="Path to output directory")
-parser_b.set_defaults(task=3)
+def main():
+    parser = argparse.ArgumentParser(prog="icdar21-mapseg-eval")
+    subparsers = parser.add_subparsers()
 
-args = parser.parse_args()
-if "task" not in args:
-    print("Please select a task to evaluate.", file=sys.stderr)
-    parser.print_help()
+    # TASK 02
+    parser_a = subparsers.add_parser("T1", help="Task 1 - Detect Building Blocks")
+    parser_a.add_argument("A", help="Path to the reference segmentation")
+    parser_a.add_argument("B", help="Path to the predicted segmentation")
+    parser_a.set_defaults(task=1)
 
-if args.task == 1:
-    task_01(args.A, args.B)
-elif args.task == 2:
-    task_02(args.A, args.B)
-elif args.task == 3:
-    task_03(args.A, args.B, args.output)
+
+    # TASK 02
+    parser_b = subparsers.add_parser("T2", help="Task 2 - Segment Map Content Area")
+    parser_b.add_argument("A", help="Path to the reference segmentation")
+    parser_b.add_argument("B", help="Path to the predicted segmentation")
+    parser_b.set_defaults(task=2)
+
+    # TASK 03
+    parser_b = subparsers.add_parser("T3", help="Task 3 - Detect graticule lines intersections")
+    parser_b.add_argument("A", help="Path to the reference detection")
+    parser_b.add_argument("B", help="Path to the predicted detection")
+    parser_b.add_argument("output", help="Path to output directory")
+    parser_b.set_defaults(task=3)
+
+
+    args = parser.parse_args()
+    if "task" not in args:
+        print("Please select a task to evaluate.", file=sys.stderr)
+        parser.print_help()
+
+    if args.task == 1:
+        task_01(args.A, args.B)
+    elif args.task == 2:
+        task_02(args.A, args.B)
+    elif args.task == 3:
+        task_03(args.A, args.B, args.output)
