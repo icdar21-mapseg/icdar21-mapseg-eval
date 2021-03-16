@@ -13,6 +13,16 @@ from . import hausdorff
 from . import eval_pt_detect, show_predictions_classified, plot_f_vs_dist_curve
 
 
+def check_create_output(directory: Path):
+    if directory.exists():
+        if not directory.is_dir():
+            raise ValueError(f"{directory} exists and is not a directory.")
+        else:
+            warnings.warn(f"{directory} already exist.")
+    else:
+        directory.mkdir(parents=True, exist_ok=True)
+
+
 def task_02(A, B):
     def run_hausdorff(A, B):
         A = imread(A, as_gray=True)
@@ -56,24 +66,25 @@ def task_02(A, B):
         print(df)
 
 
+def run_eval_pt_detect(ft: Path, fp: Path, output: Path, *, radius_limit, beta):
+    expected = np.loadtxt(ft, delimiter=",", skiprows=1)
+    predicted = np.loadtxt(fp, delimiter=",", skiprows=1)
+    area, df, df_dbg = eval_pt_detect(expected, predicted, radius_limit, beta=beta)
+    df["Reference"] = ft.stem
+    df["Prediction"] = fp.stem
+    df_dbg["Reference"] = ft.stem
+    df_dbg["Prediction"] = fp.stem
+    basename_out = fp.stem
+    df.to_csv(output / f"{basename_out}.eval.csv")
+    df_dbg.to_csv(output / f"{basename_out}.plot.csv")
+    plot_f_vs_dist_curve(df_dbg, radius_limit, beta, filename=output/f"{basename_out}.plot.pdf")
+    show_predictions_classified(expected, df, radius_limit, filename=output/f"{basename_out}.clf.pdf")
+    return area, df, df_dbg
+
+
 def task_03(A, B, output):
     radius_limit = 50
     beta = 0.5
-
-    def run_eval_pt_detect(ft: Path, fp: Path, output: Path):
-        expected = np.loadtxt(ft, delimiter=",", skiprows=1)
-        predicted = np.loadtxt(fp, delimiter=",", skiprows=1)
-        area, df, df_dbg = eval_pt_detect(expected, predicted, radius_limit, beta=beta)
-        df["Reference"] = ft.stem
-        df["Prediction"] = fp.stem
-        df_dbg["Reference"] = ft.stem
-        df_dbg["Prediction"] = fp.stem
-        basename_out = fp.stem
-        df.to_csv(output / f"{basename_out}.eval.csv")
-        df_dbg.to_csv(output / f"{basename_out}.plot.csv")
-        plot_f_vs_dist_curve(df_dbg, radius_limit, beta, filename=output/f"{basename_out}.plot.pdf")
-        show_predictions_classified(expected, df, radius_limit, filename=output/f"{basename_out}.clf.pdf")
-        return area, df, df_dbg
 
     A = Path(A)
     B = Path(B)
@@ -83,18 +94,12 @@ def task_03(A, B, output):
     elif A.is_dir() and B.is_dir():
         mode = "dir"
     else:
-        raise ValueError("Invalid inputs")
-    
-    if output.exists():
-        if not output.is_dir():
-            raise ValueError(f"{output} exists and is not a directory. Please correct output parameter.")
-        else:
-            warnings.warn(f"{output} already exist.")
-    else:
-        output.mkdir(parents=True, exist_ok=True)
+        raise ValueError("Invalid inputs: must be either two files or two directories.")
+
+    check_create_output(output)
 
     if mode == "file":
-        score, _, _ = run_eval_pt_detect(A, B, output)
+        score, _, _ = run_eval_pt_detect(A, B, output, radius_limit=radius_limit, beta=beta)
         print(f"{B} - Score: {score:0.3f}")
 
     if mode == "dir":
@@ -118,7 +123,7 @@ def task_03(A, B, output):
         results = []
         for a, b in zip(As, Bs):
             # Do some work
-            score, _, _ = run_eval_pt_detect(a, b, output)
+            score, _, _ = run_eval_pt_detect(a, b, output, radius_limit=radius_limit, beta=beta)
             results.append(score)
             bar.next()
         bar.finish()
