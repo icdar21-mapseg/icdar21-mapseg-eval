@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
 import json
+import sys
+import warnings
 
 import pandas as pd
 from progress.bar import Bar
@@ -79,6 +81,14 @@ def task_03(A, B, output):
         mode = "dir"
     else:
         raise ValueError("Invalid inputs")
+    
+    if output.exists():
+        if not output.is_dir():
+            raise ValueError(f"{output} exists and is not a directory. Please correct output parameter.")
+        else:
+            warnings.warn(f"{output} already exist.")
+    else:
+        output.mkdir(parents=True, exist_ok=True)
 
     if mode == "file":
         score, _, _ = run_eval_pt_detect(A, B, output)
@@ -120,19 +130,22 @@ parser = argparse.ArgumentParser(prog="icdar21-mapseg-eval")
 subparsers = parser.add_subparsers()
 
 # TASK 02
-parser_b = subparsers.add_parser("T02", help="Task 2 - Segment Map Content Area")
+parser_b = subparsers.add_parser("T2", help="Task 2 - Segment Map Content Area")
 parser_b.add_argument("A", help="Path to the reference segmentation")
 parser_b.add_argument("B", help="Path to the predicted segmentation")
 parser_b.set_defaults(task=2)
 # TASK 03
-parser_b = subparsers.add_parser("T03", help="Task 3 - Detect graticule lines intersections")
+parser_b = subparsers.add_parser("T3", help="Task 3 - Detect graticule lines intersections")
 parser_b.add_argument("A", help="Path to the reference detection")
 parser_b.add_argument("B", help="Path to the predicted detection")
 parser_b.add_argument("output", help="Path to output directory")
 parser_b.set_defaults(task=3)
 
 args = parser.parse_args()
-if args.task == 2:
+if "task" not in args:
+    print("Please select a task to evaluate.", file=sys.stderr)
+    parser.print_help()
+elif args.task == 2:
     task_02(args.A, args.B)
 elif args.task == 3:
     task_03(args.A, args.B, args.output)
