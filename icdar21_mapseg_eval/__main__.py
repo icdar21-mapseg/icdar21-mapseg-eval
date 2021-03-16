@@ -60,16 +60,19 @@ def task_03(A, B, output):
     radius_limit = 50
     beta = 0.5
 
-    def run_eval_pt_detect(ft, fp, output):
+    def run_eval_pt_detect(ft: Path, fp: Path, output: Path):
         expected = np.loadtxt(ft, delimiter=",", skiprows=1)
         predicted = np.loadtxt(fp, delimiter=",", skiprows=1)
         area, df, df_dbg = eval_pt_detect(expected, predicted, radius_limit, beta=beta)
-        df["File"] = fp.stem
-        df_dbg["File"] = fp.stem
-        df.to_csv(output / fp.with_suffix(".eval.csv"))
-        df_dbg.to_csv(output / fp.with_suffix(".plot.csv"))
-        plot_f_vs_dist_curve(df_dbg, radius_limit, beta, filename=output/fp.with_suffix(".plot.pdf"))
-        show_predictions_classified(expected, df, radius_limit, filename=output/fp.with_suffix(".clf.pdf"))
+        df["Reference"] = ft.stem
+        df["Prediction"] = fp.stem
+        df_dbg["Reference"] = ft.stem
+        df_dbg["Prediction"] = fp.stem
+        basename_out = fp.stem
+        df.to_csv(output / f"{basename_out}.eval.csv")
+        df_dbg.to_csv(output / f"{basename_out}.plot.csv")
+        plot_f_vs_dist_curve(df_dbg, radius_limit, beta, filename=output/f"{basename_out}.plot.pdf")
+        show_predictions_classified(expected, df, radius_limit, filename=output/f"{basename_out}.clf.pdf")
         return area, df, df_dbg
 
     A = Path(A)
@@ -96,7 +99,7 @@ def task_03(A, B, output):
 
     if mode == "dir":
         A = sorted(A.glob("*-OUTPUT-GT.csv"))
-        B = sorted(B.glob("*-OUTPUT-GT.csv"))
+        B = sorted(B.glob("*-OUTPUT-*.csv"))
 
         A_stems = [str(x.name) for x in A]
         B_stems = [str(x.name) for x in B]
@@ -113,6 +116,7 @@ def task_03(A, B, output):
             # Do some work
             score, _, _ = run_eval_pt_detect(a, b, output)
             results.append(score)
+            bar.next()
         bar.finish()
 
         df = pd.DataFrame({"Reference": A_stems, "Predictions": B_stems, "Score": results})
