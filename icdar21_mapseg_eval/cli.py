@@ -13,6 +13,7 @@ from . import hausdorff
 from . import eval_pt_detect, show_predictions_classified, plot_f_vs_dist_curve
 from . import COCO
 
+
 def task_01(A, B):
     def run_COCO(A, B):
         A = imread(A, as_gray=True)
@@ -29,7 +30,7 @@ def task_01(A, B):
         raise ValueError("Invalid inputs")
 
     if mode == "file":
-        print(run_hausdorff(A, B))
+        print(run_COCO(A, B))
 
     if mode == "dir":
         A = sorted(A.glob("*-OUTPUT-GT.png"))
@@ -53,7 +54,6 @@ def task_01(A, B):
 
         df = pd.DataFrame({"Filename": A_stems, "COCO PQ": results})
         print(df)
-
 
 
 def check_create_output(directory: Path):
@@ -119,8 +119,12 @@ def run_eval_pt_detect(ft: Path, fp: Path, output: Path, *, radius_limit, beta):
     basename_out = fp.stem
     df.to_csv(output / f"{basename_out}.eval.csv")
     df_dbg.to_csv(output / f"{basename_out}.plot.csv")
-    plot_f_vs_dist_curve(df_dbg, radius_limit, beta, filename=output/f"{basename_out}.plot.pdf")
-    show_predictions_classified(expected, df, radius_limit, filename=output/f"{basename_out}.clf.pdf")
+    plot_f_vs_dist_curve(
+        df_dbg, radius_limit, beta, filename=output / f"{basename_out}.plot.pdf"
+    )
+    show_predictions_classified(
+        expected, df, radius_limit, filename=output / f"{basename_out}.clf.pdf"
+    )
     return area, df, df_dbg
 
 
@@ -170,7 +174,9 @@ def task_03(A, B, output):
             bar.next()
         bar.finish()
 
-        df = pd.DataFrame({"Reference": A_names, "Predictions": B_names, "Score": results})
+        df = pd.DataFrame(
+            {"Reference": A_names, "Predictions": B_names, "Score": results}
+        )
         df.set_index(["Reference", "Predictions"], inplace=True)
         print(df)
         global_score = df["Score"].mean()
@@ -183,13 +189,10 @@ def task_03(A, B, output):
             "references": [str(p) for p in As],
             "predictions": [str(p) for p in Bs],
             "radius_limit": radius_limit,
-            "beta": beta
-            }
-        with open(output / "global_score.json", 'w') as outfile:
+            "beta": beta,
+        }
+        with open(output / "global_score.json", "w") as outfile:
             json.dump(data, outfile)
-
-
-
 
 
 def main():
@@ -201,7 +204,6 @@ def main():
     parser_a.add_argument("A", help="Path to the reference segmentation")
     parser_a.add_argument("B", help="Path to the predicted segmentation")
     parser_a.set_defaults(task=1)
-
 
     # TASK 02
     parser_b = subparsers.add_parser("T2", help="Task 2 - Segment Map Content Area")
@@ -215,7 +217,6 @@ def main():
     parser_b.add_argument("B", help="Path to the predicted detection")
     parser_b.add_argument("output", help="Path to output directory")
     parser_b.set_defaults(task=3)
-
 
     args = parser.parse_args()
     if "task" not in args:

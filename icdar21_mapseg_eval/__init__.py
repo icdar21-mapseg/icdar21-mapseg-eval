@@ -6,4 +6,4 @@ from .point_detection import eval_pt_detect, show_predictions_classified, plot_f
 from .coco import COCO
 from .cli import main
 
-__all__ = ["hausdorff", "eval_pt_detect", "show_predictions_classified", "plot_f_vs_dist_curve", "COCO"]
+__all__ = ["main", "hausdorff", "eval_pt_detect", "show_predictions_classified", "plot_f_vs_dist_curve", "COCO"]

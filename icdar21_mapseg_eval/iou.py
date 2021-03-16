@@ -1,17 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from pandas.core.frame import DataFrame
 
 
-'''
-Compute the intersection matrix of two label images
-
-Args:
-:param A: Input WxH array of labels (of N labels)
-:param B: Input WxH array of labels (of M labels)
-:return: A 2D-array of size NxM
-'''
 def intersections(A: np.ndarray, B: np.ndarray):
+    """
+    Compute the intersection matrix of two label images
+
+    Args:
+    :param A: Input WxH array of labels (of N labels)
+    :param B: Input WxH array of labels (of M labels)
+    :return: A 2D-array of size NxM
+    """
     assert A.shape == B.shape
 
     # Convert inputs to uint32 so we can add them.
@@ -36,18 +37,19 @@ def intersections(A: np.ndarray, B: np.ndarray):
     # hist[0,0] = 1  # <- this is really wrong
     return hist
 
-'''
-Compute the intersection over union (or refA/refB) of two label images
 
-
-Args:
-
-:param intersection: Input NxM array of intersection counts
-:return: A pair (X, Y) with IoU values of best match
-         X: A vs B (array of size N)
-         Y: A vs B (array of size M)
-'''
 def compute_IoUs(intersections, mode="union", scaling="no"):
+    """
+    Compute the intersection over union (or refA/refB) of two label images
+
+
+    Args:
+
+    :param intersection: Input NxM array of intersection counts
+    :return: A pair (X, Y) with IoU values of best match
+            X: A vs B (array of size N)
+            Y: A vs B (array of size M)
+    """
     hist = intersections
     nlabel_gt, nlabel_pred = hist.shape
     # Areas of components
@@ -62,21 +64,28 @@ def compute_IoUs(intersections, mode="union", scaling="no"):
     area_pred_Inter_BestMatch = hist[best_match_pred, np.arange(nlabel_pred)]
 
     if mode == "union":
-        area_gt_U_BestMatch = areas_gt + areas_pred[best_match_gt] - area_gt_Inter_BestMatch
-        area_pred_U_BestMatch = areas_pred + areas_gt[best_match_pred] - area_pred_Inter_BestMatch
+        area_gt_U_BestMatch = (
+            areas_gt + areas_pred[best_match_gt] - area_gt_Inter_BestMatch
+        )
+        area_pred_U_BestMatch = (
+            areas_pred + areas_gt[best_match_pred] - area_pred_Inter_BestMatch
+        )
     elif mode == "marginal":
         area_gt_U_BestMatch = areas_pred[best_match_gt]
         area_pred_U_BestMatch = areas_gt[best_match_pred]
 
-    IoU_gt = np.where(area_gt_U_BestMatch > 0, area_gt_Inter_BestMatch / area_gt_U_BestMatch, 0)
-    IoU_pred = np.where(area_pred_U_BestMatch > 0, area_pred_Inter_BestMatch / area_pred_U_BestMatch, 0)
+    IoU_gt = np.where(
+        area_gt_U_BestMatch > 0, area_gt_Inter_BestMatch / area_gt_U_BestMatch, 0
+    )
+    IoU_pred = np.where(
+        area_pred_U_BestMatch > 0, area_pred_Inter_BestMatch / area_pred_U_BestMatch, 0
+    )
 
     if scaling == "marginal":
         IoU_gt *= areas_gt / areas_gt.max()
         IoU_pred *= areas_pred / areas_pred.max()
 
     return IoU_gt, IoU_pred
-
 
 
 # def viz_iou(A: np.ndarray, iou: np.ndarray, output_path: str = None, lower_bound=0.5):
@@ -109,38 +118,34 @@ def compute_IoUs(intersections, mode="union", scaling="no"):
 #         plt.imshow(out)
 
 
-
-
-
-
-
-'''
-Compute the F-score, Precision and Recall Scores from IoU scores measured of 2 images components
-
-The match between two components A and B is considered when the IoU > 0.5. It returns a dataframe with:
-
-          Precision    Recall   F-score
-IoU
-0.500665   0.757566  0.434935  0.552607
-0.502368   0.757244  0.434750  0.552372
-0.505121   0.756600  0.434381  0.551902
-0.506959   0.756278  0.434196  0.551667
-...
-0.995850   0.000966  0.000555  0.000705
-0.995986   0.000644  0.000370  0.000470
-0.996028   0.000322  0.000185  0.000235
-'''
 def compute_matching_scores(ref: np.ndarray, containder_score: np.ndarray):
+    """
+    Compute the F-score, Precision and Recall Scores from IoU scores measured of 2 images components
+
+    The match between two components A and B is considered when the IoU > 0.5. It returns a dataframe with:
+
+            Precision    Recall   F-score
+    IoU
+    0.500665   0.757566  0.434935  0.552607
+    0.502368   0.757244  0.434750  0.552372
+    0.505121   0.756600  0.434381  0.551902
+    0.506959   0.756278  0.434196  0.551667
+    ...
+    0.995850   0.000966  0.000555  0.000705
+    0.995986   0.000644  0.000370  0.000470
+    0.996028   0.000322  0.000185  0.000235
+    """
     # FIXME wrong results if scores_B.size == 0 (or scores_A.size == 0)
     scores_A = np.sort(ref)
     scores_B = np.sort(containder_score)
     startA = np.searchsorted(scores_A, 0.5, side="right")
     startB = np.searchsorted(scores_B, 0.5, side="right")
-    nonMatchA = startA # Number of A points with no-match
-    nonMatchB = startB # Number of B points with no-match
+    # nonMatchA = startA  # Number of A points with no-match
+    # nonMatchB = startB  # Number of B points with no-match
     scores_A1 = scores_A[startA:]
     scores_B1 = scores_B[startB:]
-    assert(np.allclose(scores_A1, scores_B1))  # We must have a partial bijection between A and B for IoU > 0.5
+    # We must have a partial bijection between A and B for IoU > 0.5
+    assert np.allclose(scores_A1, scores_B1)
 
     # P: Size of the prediction set
     # T: Size of the target (reference) set
@@ -158,72 +163,68 @@ def compute_matching_scores(ref: np.ndarray, containder_score: np.ndarray):
     precision = tp / P
     fscore = 2 * tp / (P + T)
 
-
-    df = pd.DataFrame({
-        "IoU" : iou_values,
-        "Precision" : precision,
-        "Recall" : recall,
-        "F-score" : fscore,
-    })
+    df = pd.DataFrame(
+        {
+            "IoU": iou_values,
+            "Precision": precision,
+            "Recall": recall,
+            "F-score": fscore,
+        }
+    )
     return df
 
 
-
-
-
-
-'''
-Dataframe
-
-'''
-def plot_scores(df, out=None, ax=None):
-    #sns.set()
-    df = df[["IoU", "Precision", "Recall", "F-score"]] #, "COCO_PQ", "COCO_SQ", "COCO_RQ"]]
+def plot_scores(df: DataFrame, out=None, ax=None):
+    # sns.set()
+    df = df[
+        ["IoU", "Precision", "Recall", "F-score"]
+    ]  # , "COCO_PQ", "COCO_SQ", "COCO_RQ"]]
     df = df.set_index("IoU")
     df = df.reindex([0] + list(df.index) + [1], method="backfill")
-    df.iloc[-1] = [0,0,0]
+    df.iloc[-1] = [0, 0, 0]
 
-    if ax == None:
-        plt.figure(figsize=(6,6))
+    if ax is None:
+        plt.figure(figsize=(6, 6))
         ax = plt.gca()
 
-    df.plot(ax=ax, marker='o', drawstyle='steps-pre')
+    df.plot(ax=ax, marker="o", drawstyle="steps-pre")
     plt.xlim(0.5, 1)
     plt.ylim(0, 1)
     if out:
-        #logging.info("Saving plot %s", out)
+        # logging.info("Saving plot %s", out)
         plt.savefig(out, dpi=300)
     else:
         plt.show()
 
 
-
-'''
-Mask an input label image and rearrange the label numbers so that
-they form the continuous range [0, numlabel].
-
-Note that there is not relabelling of the components, just a
-renumbering.
-
-Args:
-
-:param labels: Image of labels to be masked
-:param bg_mask: Mask of the background image (must have the same shape as `labels`)
-:param bg_label: Value of the label for masked (background) pixels
-
-Returns:
-
-labels_renumbered: Image where all pixels in the background (masked) 
-    have label `bg_label and all other pixels have the label value
-    renumbered so that the labels in the resulting image
-    for the continuous range `[0, numlabel]` (where `numlabel` is
-    the number of distinct labels different from `0`.)
-'''
 def mask_label_image(labels: np.ndarray, bg_mask: np.ndarray, bg_label: int = 0):
+    """
+    Mask an input label image and rearrange the label numbers so that
+    they form the continuous range [0, numlabel].
+
+    Note that there is not relabelling of the components, just a
+    renumbering.
+
+    Args:
+
+    :param labels: Image of labels to be masked
+    :param bg_mask: Mask of the background image (must have the same shape as `labels`)
+    :param bg_label: Value of the label for masked (background) pixels
+
+    Returns:
+
+    labels_renumbered: Image where all pixels in the background (masked)
+        have label `bg_label and all other pixels have the label value
+        renumbered so that the labels in the resulting image
+        for the continuous range `[0, numlabel]` (where `numlabel` is
+        the number of distinct labels different from `0`.)
+    """
     if not labels.shape == bg_mask.shape:
-        raise ValueError(f"Expected same shapes for `labels` and `bg_mask`, "
+        raise ValueError(
+            f"Expected same shapes for `labels` and `bg_mask`, "
             f"but got labels.shape={labels.shape} and bg_mask.shape={bg_mask.shape}. "
-            "Please check the input images match." )
+            "Please check the input images match."
+        )
     if bg_mask.dtype != np.bool:
         bg_mask = bg_mask.astype(np.bool)
 
@@ -241,7 +242,3 @@ def mask_label_image(labels: np.ndarray, bg_mask: np.ndarray, bg_label: int = 0)
     labels_renumbered = lut[labels_renumbered]
 
     return labels_renumbered
-
-
-
-
