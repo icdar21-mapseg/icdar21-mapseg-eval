@@ -1,6 +1,6 @@
 import numpy as np
 
-from icdar21_mapseg_eval.haussdorff import hausdorff
+from icdar21_mapseg_eval import hausdorff
 
 def test_haussdorff():
     A = np.array(

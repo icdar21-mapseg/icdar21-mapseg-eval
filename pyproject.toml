@@ -13,12 +13,16 @@ scikit-image = "^0.18.1"
 matplotlib = "^3.3.4"
 progress = "*"
 pandas = "^1.1"
+PyQt5 = {version = "^5.15.4", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 black = "^20.8b1"
 flake8 = "^3.9.0"
 pylint = "^2.7.2"
+
+[tool.poetry.extras]
+visualisation = ["PyQt5"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
