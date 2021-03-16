@@ -98,28 +98,32 @@ def task_03(A, B, output):
         print(f"{B} - Score: {score:0.3f}")
 
     if mode == "dir":
-        A = sorted(A.glob("*-OUTPUT-GT.csv"))
-        B = sorted(B.glob("*-OUTPUT-*.csv"))
+        As = sorted(A.glob("*-OUTPUT-GT.csv"))
+        Bs = sorted(B.glob("*-OUTPUT-PRED.csv"))
+        if len(Bs) == 0:
+            # Tolerate bad filenames
+            warnings.warn("Prediction files should be named NNN-OUTPUT-PRED.csv and not NNN-OUTPUT-GT.csv.")
+            Bs = sorted(B.glob("*-OUTPUT-GT.csv"))
 
-        A_stems = [str(x.name) for x in A]
-        B_stems = [str(x.name) for x in B]
-        if not A_stems or not (B_stems):
+        A_names = [str(x.name) for x in As]
+        B_names = [str(x.name) for x in Bs]
+        if not A_names or not B_names:
             raise RuntimeError("Empty reference and/or result directory.")
 
-        diff = set(A_stems) ^ set(B_stems)
+        diff = set([n[:3] for n in A_names]) ^ set([n[:3] for n in B_names])
         if diff:
-            raise RuntimeError(f"No reference or result for {diff}.")
+            raise RuntimeError(f"No reference or result for {sorted(list(diff))}.")
 
-        bar = Bar("Processing", max=len(A))
+        bar = Bar("Processing", max=len(As))
         results = []
-        for a, b in zip(A, B):
+        for a, b in zip(As, Bs):
             # Do some work
             score, _, _ = run_eval_pt_detect(a, b, output)
             results.append(score)
             bar.next()
         bar.finish()
 
-        df = pd.DataFrame({"Reference": A_stems, "Predictions": B_stems, "Score": results})
+        df = pd.DataFrame({"Reference": A_names, "Predictions": B_names, "Score": results})
         df.set_index(["Reference", "Predictions"], inplace=True)
         print(df)
         global_score = df["Score"].mean()
@@ -129,8 +133,8 @@ def task_03(A, B, output):
         df.to_csv(output / f"global_rad:{radius_limit}_beta:{beta:0.2f}.csv")
         data = {
             "global_mean_score": global_score,
-            "references": [str(p) for p in A],
-            "predictions": [str(p) for p in B],
+            "references": [str(p) for p in As],
+            "predictions": [str(p) for p in Bs],
             "radius_limit": radius_limit,
             "beta": beta
             }
