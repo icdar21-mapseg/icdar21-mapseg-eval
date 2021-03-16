@@ -66,10 +66,10 @@ def task_03(A, B, output):
         area, df, df_dbg = eval_pt_detect(expected, predicted, radius_limit, beta=beta)
         df["File"] = fp.stem
         df_dbg["File"] = fp.stem
-        df.to_csv(output / fp.with_suffix("eval.csv"))
-        df_dbg.to_csv(output / fp.with_suffix("plot.csv"))
-        plot_f_vs_dist_curve(df_dbg, radius_limit, beta, filename=output/fp.with_suffix("plot.pdf"))
-        show_predictions_classified(expected, df, radius_limit, filename=output/fp.with_suffix("clf.pdf"))
+        df.to_csv(output / fp.with_suffix(".eval.csv"))
+        df_dbg.to_csv(output / fp.with_suffix(".plot.csv"))
+        plot_f_vs_dist_curve(df_dbg, radius_limit, beta, filename=output/fp.with_suffix(".plot.pdf"))
+        show_predictions_classified(expected, df, radius_limit, filename=output/fp.with_suffix(".clf.pdf"))
         return area, df, df_dbg
 
     A = Path(A)
@@ -115,15 +115,23 @@ def task_03(A, B, output):
             results.append(score)
         bar.finish()
 
-        df = pd.DataFrame({"Filename": A_stems, "Score": results})
+        df = pd.DataFrame({"Reference": A_stems, "Predictions": B_stems, "Score": results})
+        df.set_index(["Reference", "Predictions"], inplace=True)
         print(df)
         global_score = df["Score"].mean()
         print("==============================")
         print(f"Global score for task 3: {global_score:0.3f}")
         print("==============================")
-        df.to_csv(output / "global.csv")
-        with open(output / "global_score.json") as outfile:
-            json.dump({"score": global_score}, outfile)
+        df.to_csv(output / f"global_rad:{radius_limit}_beta:{beta:0.2f}.csv")
+        data = {
+            "global_mean_score": global_score,
+            "references": [str(p) for p in A],
+            "predictions": [str(p) for p in B],
+            "radius_limit": radius_limit,
+            "beta": beta
+            }
+        with open(output / "global_score.json", 'w') as outfile:
+            json.dump(data, outfile)
 
 
 parser = argparse.ArgumentParser(prog="icdar21-mapseg-eval")
