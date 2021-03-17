@@ -66,5 +66,7 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, plot=False):
     if plot:
         iou.plot_scores(df)
 
-    COCO_PQ = df["F-score"].iloc[0] * df["IoU"].mean()
-    return COCO_PQ
+    COCO_SQ = df["IoU"].mean()
+    COCO_RQ = df["F-score"].iloc[0]
+    COCO_PQ = COCO_SQ * COCO_RQ
+    return COCO_PQ, COCO_SQ, COCO_RQ
