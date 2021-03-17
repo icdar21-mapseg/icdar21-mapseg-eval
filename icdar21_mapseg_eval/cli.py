@@ -222,8 +222,7 @@ def main():
     if "task" not in args:
         print("Please select a task to evaluate.", file=sys.stderr)
         parser.print_help()
-
-    if args.task == 1:
+    elif args.task == 1:
         task_01(args.A, args.B)
     elif args.task == 2:
         task_02(args.A, args.B)
