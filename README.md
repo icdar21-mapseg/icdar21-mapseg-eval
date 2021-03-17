@@ -1,27 +1,95 @@
-# icdar21-mapseg-eval
-Evaluation tools for participants to the ICDAR 21 MapSeg competition.
+# ICDAR 21 MapSeg Evaluation Tools
+
+Welcome to the repository of the evaluation tools for ICDAR 2021 Competition in Historical Map Segmentation (MapSeg).
+
+Here you can learn how to install and use the evaluation tools.
+Feel free to report any problem in the issue tracker, and we will fix it as soon as possible.
+
+## Installation
+The evaluation tools are packaged as a Python package.
+
+You need a Python >= 3.7.1 to run these tools.
+
+You can install the evaluation tools with the following command:
+```shell
+pip install icdar21-mapseg-eval
+```
+
+You can test your installation by running the following command which should display the online help of the command line tool:
+```shell
+icdar21-mapseg-eval --help
+```
+
+Should you need extra features, you may also import the package and use the exported functions.
+```python
+from icdar21_mapseg_eval import COCO
+task1_metrics = COCO(ground_truth_segmentation, predicted_segmentation)
+print(task1_metrics)
+```
+
+## Usage
+There is a single command line program to run the evaluation for all 3 tasks.
+To select the task you want to run the evaluation for, you need to follow this syntax:
+```shell
+icdar21-mapseg-eval {T1,T2,T3} path_to_reference path_to_prediction path_to_outputs
+```
+where:
+
+- `{T1,T2,T3}` means "select either `T1` or `T2` or `T3`.
+- `path_to_reference` is the path to either a file or a directory.
+- `path_to_prediction` is the path to either a file or a directory.
+- `path_to_outputs` is the path to the directory where results will be stored.
 
 
-## 
+### Evaluation tool of task 1: Detect building blocks
+Please refer to https://icdar21-mapseg.github.io/tasks/task1/ for the description of the task.
+
+This tool computes the [COCO PQ score](https://cocodataset.org/#panoptic-eval) associated to the instance segmentation returned by your system.
+Please note that as we have only 1 "thing" class and not "stuff" class, we provide indicators only for the building blocks class.
+We have a custom implementation which is fully compliant with the COCO PQ evaluation code.
+The need for a custom evaluation was driven by data format incompatibilities.
+
+The script supports comparing either:
+
+* a predicted segmentation to a reference segmentation (as two binary images in PNG or two label maps in TIFF16).
+* a reference directory to a reference segmentation.  
+  In this case, reference files are expected to end with ``-OUTPUT-GT.png``, and prediction files with ``-OUTPUT-PRED.png`` or ``-OUTPUT-*.tiff``.
 
 
+Comparing two files:
 
-## Evaluation tool of task 2
+```
+> icdar21-mapseg-eval T1 reference.png predicted.png
+COCO PQ  COCO SQ  COCO RQ
+1.0      1.0      1.0
+```
 
-See https://icdar21-mapseg.github.io/tasks/task2/ the description of the task. It computes the 95% Haussdorf (HD)
-between two binary images.
+Comparing two directories:
+
+```
+> icdar21-mapseg-eval T1 ./1-detbblocks/validation ./prediction
+Processing |################################| 6/6
+            Filename  COCO PQ  COCO SQ  COCO RQ
+0  201-OUTPUT-GT.png    1.0    1.0      1.0
+```
+
+
+### Evaluation tool of task 2: Segment map content area
+Please refer to https://icdar21-mapseg.github.io/tasks/task2/ for the description of the task.
+
+This tool computes the 95% Haussdorff (HD) between two binary images.
 
 
 The script supports comparing either:
 
 * a predicted segmentation to a reference segmentation (as two binary images)
-* a reference directory to a reference segmentation (in this case, files are expected
-  to have the same names and to finish with ``-OUTPUT-GT.png``.
+* a reference directory to a reference segmentation
+  In this case, reference files are expected to end with ``-OUTPUT-GT.png``, and prediction files with ``-OUTPUT-PRED.png``.
 
 
 Comparing two files:
 
-```bash
+```
 > icdar21-mapseg-eval T2 reference.png predicted.png
 1.6
 ```
@@ -41,8 +109,8 @@ Processing |################################| 6/6
 ```
 
 
-## Evaluation tool for task 3: Detection of graticule lines intersections
-See https://icdar21-mapseg.github.io/tasks/task3/ the description of the task.
+### Evaluation tool for task 3: Locate graticule lines intersections
+Please refer to https://icdar21-mapseg.github.io/tasks/task3/ for the description of the task.
 
 This tool computes an aggregate indicator of detection and localization accuracy for each set of points (map sheet).
 The global indicator is the average of all individual scores.
@@ -94,4 +162,4 @@ Content:
 - `nnn-OUTPUT-PRED.clf.pdf `:  
   A visualization of predictions and their error classification against the ground truth.
 
-You can check the [Demo analysis notebook for task 3](task3_point_detect_eval_demo.ipynb) for further details about the tools we provide.
+You can check the [Demo analysis notebook for task 3](task3_point_detect_eval_demo.ipynb) for further details about the evaluation tools for task 3 we provide.
