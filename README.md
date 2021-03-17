@@ -1,5 +1,12 @@
 # ICDAR 21 MapSeg Evaluation Tools
 
+| :warning: WARNING          |
+|:---------------------------|
+| This code is not ready yet.|
+
+**We are hardening the command line tool and will release our first version very soon.**
+
+
 Welcome to the repository of the evaluation tools for ICDAR 2021 Competition in Historical Map Segmentation (MapSeg).
 
 Here you can learn how to install and use the evaluation tools.
