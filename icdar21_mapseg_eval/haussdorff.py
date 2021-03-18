@@ -34,6 +34,9 @@ def hausdorff(A: np.ndarray, B: np.ndarray, percentile=95):
 
     A = np.asarray(A, dtype=bool)
     B = np.asarray(B, dtype=bool)
+    # TODO try implementation of 
+    # https://github.com/loli/medpy/blob/6168d9dec058f2787cc8fc82c91356a33bc40039/medpy/metric/binary.py#L1195
+    # which avoids padding (maybe faster)
     A = np.pad(A, pad_width=1)
     B = np.pad(B, pad_width=1)
 
