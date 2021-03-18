@@ -157,8 +157,8 @@ def compute_matching_scores(ref: np.ndarray, containder_score: np.ndarray):
     iou_values, count = np.unique(scores_A1, return_counts=True)
     tp = np.flipud(np.cumsum(np.flip(count)))
 
-    # Recall = Nombre de matchs / size(ref)
-    # Precision = Nombre de matchs / size(containder)
+    # Recall = Number of matchs / size(ref)
+    # Precision = Number of matchs / size(containder)
     recall = tp / T
     precision = tp / P
     fscore = 2 * tp / (P + T)
