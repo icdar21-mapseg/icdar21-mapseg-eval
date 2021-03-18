@@ -16,9 +16,9 @@ from . import COCO
 
 def task_01(A, B, output):
     def run_COCO(A, B, output):
+        basename_out = B.stem
         A = imread(A, as_gray=True)
         B = imread(B, as_gray=True)
-        basename_out = B.stem
         return COCO(A, B, plot=output / f"{basename_out}.plot.pdf")
 
     A = Path(A)
