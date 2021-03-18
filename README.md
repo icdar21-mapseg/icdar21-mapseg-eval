@@ -1,12 +1,5 @@
 # ICDAR 21 MapSeg Evaluation Tools
 
-| :warning: WARNING          |
-|:---------------------------|
-| This code is not ready yet.|
-
-**We are hardening the command line tool and will release our first version very soon.**
-
-
 Welcome to the repository of the evaluation tools for ICDAR 2021 Competition in Historical Map Segmentation (MapSeg).
 
 Here you can learn how to install and use the evaluation tools.
@@ -169,4 +162,4 @@ Content:
 - `nnn-OUTPUT-PRED.clf.pdf `:  
   A visualization of predictions and their error classification against the ground truth.
 
-You can check the [Demo analysis notebook for task 3](task3_point_detect_eval_demo.ipynb) for further details about the evaluation tools for task 3 we provide.
+You can check the [Demo analysis notebook for task 3](notebooks/task3_point_detect_eval_demo.ipynb) for further details about the evaluation tools for task 3.
