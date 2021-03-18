@@ -1,9 +1,17 @@
 [tool.poetry]
 name = "icdar21-mapseg-eval"
-version = "1.0.0"
+version = "1.0.1"
 description = "Evaluation tools for ICDAR21 Competition on Historical Map Segmentation (MapSeg)."
 authors = ["icdar21-mapseg-contact(at)googlegroups.com"]
 license = "MIT"
+readme = "README.md"
+homepage = "https://icdar21-mapseg.github.io/"
+repository = "https://github.com/icdar21-mapseg/icdar21-mapseg-eval"
+documentation = "https://github.com/icdar21-mapseg/icdar21-mapseg-eval/blob/main/README.md"
+keywords = ["evaluation", "map", "image segmentation", "research", "icdar21"]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/icdar21-mapseg/icdar21-mapseg-eval/issues"
 
 [tool.poetry.dependencies]
 python = ">=3.7.1,<4.0"
