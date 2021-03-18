@@ -36,9 +36,11 @@ def _compute_iou(A, B):
     return iou_a, iou_b
 
 
-def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, plot=False):
+def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, plot=None):
     """
     Compute the COCO metric of one segmentation vs another segmentation
+
+    plot: Path to output file for plot, or `None` if deactivated.
     """
     A = np.asarray(A)
     B = np.asarray(B)
@@ -64,9 +66,9 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, plot=False):
 
     df = iou.compute_matching_scores(A, B)
     if plot:
-        iou.plot_scores(df)
+        iou.plot_scores(df, out=plot)
 
-    COCO_SQ = df["IoU"].mean()
-    COCO_RQ = df["F-score"].iloc[0]
+    COCO_SQ = df["IoU"].mean() if len(df) > 0 else 0
+    COCO_RQ = df["F-score"].iloc[0] if len(df) > 0 else 0
     COCO_PQ = COCO_SQ * COCO_RQ
     return COCO_PQ, COCO_SQ, COCO_RQ

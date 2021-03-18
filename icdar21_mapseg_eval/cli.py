@@ -15,10 +15,11 @@ from . import COCO
 
 
 def task_01(A, B, output):
-    def run_COCO(A, B):
+    def run_COCO(A, B, output):
         A = imread(A, as_gray=True)
         B = imread(B, as_gray=True)
-        return COCO(A, B)
+        basename_out = B.stem
+        return COCO(A, B, plot=output / f"{basename_out}.plot.pdf")
 
     A = Path(A)
     B = Path(B)
@@ -27,7 +28,7 @@ def task_01(A, B, output):
     check_create_output(output)
 
     if mode == "file":
-        pq, sq, rq = run_COCO(A, B)
+        pq, sq, rq = run_COCO(A, B, output)
         print(f"{B.name} - COCO PQ {pq:0.2f} = {sq:0.2f} SQ * {rq:0.2f} RQ")
 
     if mode == "dir":
@@ -38,7 +39,7 @@ def task_01(A, B, output):
         results_sq = []
         results_rq = []
         for a, b in zip(As, Bs):
-            pq, sq, rq = run_COCO(a, b)
+            pq, sq, rq = run_COCO(a, b, output)
             results_pq.append(pq)
             results_sq.append(sq)
             results_rq.append(rq)
