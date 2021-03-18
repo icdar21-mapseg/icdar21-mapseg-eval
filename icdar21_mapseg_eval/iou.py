@@ -135,7 +135,11 @@ def compute_matching_scores(ref: np.ndarray, containder_score: np.ndarray):
     0.995986   0.000644  0.000370  0.000470
     0.996028   0.000322  0.000185  0.000235
     """
-    # FIXME wrong results if scores_B.size == 0 (or scores_A.size == 0)
+    if ref.size == 0:
+        raise ValueError("'ref' parameter is an empty array.")
+    if containder_score.size == 0:
+        raise ValueError("'containder_score' parameter is an empty array.")
+
     scores_A = np.sort(ref)
     scores_B = np.sort(containder_score)
     startA = np.searchsorted(scores_A, 0.5, side="right")
