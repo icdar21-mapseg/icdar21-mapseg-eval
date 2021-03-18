@@ -8,7 +8,7 @@ Feel free to report any problem in the issue tracker, and we will fix it as soon
 ## Installation
 The evaluation tools are packaged as a Python package.
 
-You need a Python >= 3.7.1 to run these tools.
+You need Python >= 3.7.1 to run these tools.
 
 You can install the evaluation tools with the following command:
 ```shell
@@ -20,13 +20,6 @@ You can test your installation by running the following command which should dis
 icdar21-mapseg-eval --help
 ```
 
-Should you need extra features, you may also import the package and use the exported functions.
-```python
-from icdar21_mapseg_eval import COCO
-task1_metrics = COCO(ground_truth_segmentation, predicted_segmentation)
-print(task1_metrics)
-```
-
 ## Usage
 There is a single command line program to run the evaluation for all 3 tasks.
 To select the task you want to run the evaluation for, you need to follow this syntax:
@@ -35,20 +28,65 @@ icdar21-mapseg-eval {T1,T2,T3} path_to_reference path_to_prediction path_to_outp
 ```
 where:
 
-- `{T1,T2,T3}` means "select either `T1` or `T2` or `T3`.
+- `{T1,T2,T3}` means select either `T1` or `T2` or `T3`.
 - `path_to_reference` is the path to either a file or a directory.
 - `path_to_prediction` is the path to either a file or a directory.
 - `path_to_outputs` is the path to the directory where results will be stored.
 
+You will find in the sections below sample usage for each task.
 
-### Evaluation tool of task 1: Detect building blocks
-Please refer to https://icdar21-mapseg.github.io/tasks/task1/ for the description of the task.
 
+Should you need extra features, you may also import the package and use the exported functions.
+```python
+# Example for Task 1
+from skimage.io import imread
+from icdar21_mapseg_eval import COCO
+task1_metrics = COCO(imread(ref_seg, as_gray=True), imread(pred_seg, as_gray=True))
+print(task1_metrics)
+# Example for Task 2
+from skimage.io import imread
+from icdar21_mapseg_eval import hausdorff
+task2_metrics = hausdorff(imread(ref_seg, as_gray=True), imread(pred_seg, as_gray=True))
+print(task2_metrics)
+# Example for Task 3
+import numpy as np
+from icdar21_mapseg_eval import eval_pt_detect
+task3_metrics = eval_pt_detect(
+        np.loadtxt(ref_det, delimiter=",", skiprows=1), 
+        np.loadtxt(pred_det, delimiter=",", skiprows=1),
+        radius_limit=50, beta=0.5)  # values used for the competition
+print(task3_metrics)
+```
+
+## Evaluation tool of task 1: Detect building blocks
+*Please refer to https://icdar21-mapseg.github.io/tasks/task1/ for the description of the task.*
+
+### Metric
 This tool computes the [COCO PQ score](https://cocodataset.org/#panoptic-eval) associated to the instance segmentation returned by your system.
 Please note that as we have only 1 "thing" class and not "stuff" class, we provide indicators only for the building blocks class.
-We have a custom implementation which is fully compliant with the COCO PQ evaluation code.
-The need for a custom evaluation was driven by data format incompatibilities.
+These simplifications required a custom implementation which is fully compliant with the COCO PQ evaluation code.
 
+We report 3 indicators:
+
+- **COCO SQ** (segmentation quality): mean IoU between matching shapes (matching shapes in reference and prediction have an IoU > 0.5).  
+  $SQ \in [0,1]$, higher is better.
+- **COCO RQ** (detection/recognition quality): detection F-score for shapes, a predicted shape is a true positive if it as an IoU > 0.5 with a reference shape.  
+  $RQ \in [0,1]$, higher is better.
+- **COCO PQ** (aggregated score): $PQ = SQ * RQ$.  
+  $PQ \in [0,1]$, higher is better.
+
+The indicators are computed as:
+$$
+{\text{PQ}} = \underbrace{\frac{\sum_{(p, g) \in TP} \text{IoU}(p, g)}{\vphantom{\frac{1}{2}}|TP|}}_{\text{segmentation quality (SQ)}} \times \underbrace{\frac{|TP|}{|TP| + \frac{1}{2} |FP| + \frac{1}{2} |FN|}}_{\text{recognition quality (RQ)}}
+$$
+where $TP$ is the set of matching pairs $(p, g) \in (P \times G)$ between predictions ($P$) and reference ($G$), $FP$ is the set of unmatched predicted shapes, and $FN$ is the set of unmatched reference shapes. 
+Shapes are considered as matching when:
+$$
+\text{IoU}(p,g) = \frac{p \cap g}{p \cup g} \gt 0.5.
+$$
+
+
+### Tool sample usage
 The script supports comparing either:
 
 * a predicted segmentation to a reference segmentation (as two binary images in PNG or two label maps in TIFF16).
@@ -59,27 +97,50 @@ The script supports comparing either:
 Comparing two files:
 
 ```
-> icdar21-mapseg-eval T1 reference.png predicted.png
-COCO PQ  COCO SQ  COCO RQ
-1.0      1.0      1.0
+$ icdar21-mapseg-eval T1 201-OUTPUT-GT.png 201-OUTPUT-PRED.png output_dir
+201-OUTPUT-PRED.png - COCO PQ 1.00 = 1.00 SQ * 1.00 RQ
 ```
 
 Comparing two directories:
 
 ```
-> icdar21-mapseg-eval T1 ./1-detbblocks/validation ./prediction
-Processing |################################| 6/6
-            Filename  COCO PQ  COCO SQ  COCO RQ
-0  201-OUTPUT-GT.png    1.0    1.0      1.0
+$ icdar21-mapseg-eval T1 1-detbblocks/validation/ mypred/t1/validation/ output_dir
+Processing |################################| 1/1
+                                       COCO PQ  COCO SQ  COCO RQ
+Reference         Prediction                                  
+201-OUTPUT-GT.png 201-OUTPUT-PRED.png      1.0      1.0      1.0
+==============================
+Global score for task 1: 1.000
+============================
 ```
 
+### Files generated in output folder
+The output directory will contain something like:
 
-### Evaluation tool of task 2: Segment map content area
-Please refer to https://icdar21-mapseg.github.io/tasks/task2/ for the description of the task.
+```
+201-OUTPUT-GT.plot.pdf 
+global_coco.csv        
+global_score.json      
+```
 
-This tool computes the 95% Haussdorff (HD) between two binary images.
+Detail:
+- `global_coco.csv`:  
+  COCO metrics for each image.
+- `global_score.json`:  
+  Easy to parse file for global score with a summary of files analyzed.
+- `NNN-OUTPUT-PRED.plot.pdf`:  
+  Plot of the F-score against all IoU thresholds (COCO PQ is the area under the F-score curve + the value of the F-score at 0.5).
 
 
+## Evaluation tool of task 2: Segment map content area
+*Please refer to https://icdar21-mapseg.github.io/tasks/task2/ for the description of the task.*
+
+### Metric
+This tool computes the 95% [Haussdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance) (HD95) between two binary images.
+This measures how the outline of the reference area and the predicted area are distant.
+$\text{HD95} \in [0, +\infty]$ and as it is an error measure, lower values indicate better performance.
+
+### Tool sample usage
 The script supports comparing either:
 
 * a predicted segmentation to a reference segmentation (as two binary images)
@@ -90,39 +151,67 @@ The script supports comparing either:
 Comparing two files:
 
 ```
-> icdar21-mapseg-eval T2 reference.png predicted.png
-1.6
+$ icdar21-mapseg-eval T2 201-OUTPUT-GT.png 201-OUTPUT-PRED.png output_dir
+201-OUTPUT-PRED.png - Haussdorff95 = 0.00
 ```
 
 Comparing two directories:
 
 ```
-> icdar21-mapseg-eval T2 ./2-segmaparea/validation ./prediction
+$ icdar21-mapseg-eval T2 ./2-segmaparea/validation mypred/t2/validation output_dir
+.../PIL/Image.py:2847: DecompressionBombWarning: Image size (137239200 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.
 Processing |################################| 6/6
-            Filename  Error
-0  201-OUTPUT-GT.png    0.0
-1  202-OUTPUT-GT.png    0.0
-2  203-OUTPUT-GT.png    0.0
-3  204-OUTPUT-GT.png    0.0
-4  205-OUTPUT-GT.png    0.0
-5  206-OUTPUT-GT.png    0.0
+                                     Error
+Reference         Prediction              
+201-OUTPUT-GT.png 201-OUTPUT-GT.png    0.0
+202-OUTPUT-GT.png 202-OUTPUT-GT.png    0.0
+203-OUTPUT-GT.png 203-OUTPUT-GT.png    0.0
+204-OUTPUT-GT.png 204-OUTPUT-GT.png    0.0
+205-OUTPUT-GT.png 205-OUTPUT-GT.png    0.0
+206-OUTPUT-GT.png 206-OUTPUT-GT.png    0.0
+==============================
+Global error for task 2: 0.000
 ```
 
+:warning: Because the PNG files are large, you may get a warning from PIP that you can safely ignore:  
+`DecompressionBombWarning: Image size (137239200 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.`
 
-### Evaluation tool for task 3: Locate graticule lines intersections
-Please refer to https://icdar21-mapseg.github.io/tasks/task3/ for the description of the task.
+### Files generated in output folder
+When processing directories, the output directory will contain the following files:
 
+- `global_error.json`:  
+  Easy to parse file for global score with a summary of files analyzed.
+- `global_hd95.csv`:  
+  HD95 metrics for each image.
+
+
+## Evaluation tool for task 3: Locate graticule lines intersections
+*Please refer to https://icdar21-mapseg.github.io/tasks/task3/ for the description of the task.*
+
+### Metric
 This tool computes an aggregate indicator of detection and localization accuracy for each set of points (map sheet).
+More precisely, we compute and plot the F-score (with $\beta=0.5$ to penalize false detections more than missed elements) of the correctly detected points across a range of distance thresholds (50 pixels here).
 The global indicator is the average of all individual scores.
 
-The tool is called by passing the "T3" option to the command line.
-You can either process two individual outputs, or two directories containing multiple results.
 
+### Tool sample usage
+The script supports comparing either:
 
-Here is a sample showing how you can compare the predictions generated in the directory `validation_pred` 
-against the ground truth in `validation_gt` and store all results and analysis under `output_results_dir`.
+* a predicted detection to a reference detection (as two CSV files)
+* a reference directory to a reference detection
+  In this case, reference files are expected to end with ``-OUTPUT-GT.csv``, and prediction files with ``-OUTPUT-PRED.csv``.
+
+Comparing two files:
+
 ```
-> icdar21_mapseg_eval T3 validation_gt  validation_pred output_results_dir
+$ icdar21-mapseg-eval T3 201-OUTPUT-GT.csv 201-OUTPUT-PRED.csv output_dir
+201-OUTPUT-PRED.csv - Score: 1.000
+```
+
+Comparing two directories:
+
+```
+$ icdar21-mapseg-eval T3 ./3-locglinesinter/validation mypred/t3/validation output_dir
 Processing |################################| 6/6
                                        Score
 Reference         Predictions               
@@ -137,7 +226,9 @@ Global score for task 3: 1.000
 ==============================
 ```
 
-The directory `output_results_dir` will contain something like:
+
+### Files generated in output folder
+The output directory will contain something like:
 ```
 201-OUTPUT-PRED.clf.pdf 
 201-OUTPUT-PRED.eval.csv
@@ -148,7 +239,7 @@ global_rad:50_beta:0.50.csv
 global_score.json
 ```
 
-Content:
+Detail:
 - `global_rad:50_beta:0.50.csv`:  
   global score for each pair of files (ground truth, prediction).
 - `global_score.json`:  
