@@ -64,6 +64,10 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, plot=None):
         A = A[1:]
         B = B[1:]
 
+    if B.size == 0:
+        print("Warning: empty prediction. Setting scores to 0 and skipping plot generation.")
+        return 0., 0., 0.
+
     df = iou.compute_matching_scores(A, B)
     if plot:
         iou.plot_scores(df, out=plot)
