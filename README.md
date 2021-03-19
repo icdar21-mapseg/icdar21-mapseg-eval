@@ -65,26 +65,10 @@ print(task3_metrics)
 This tool computes the [COCO PQ score](https://cocodataset.org/#panoptic-eval) associated to the instance segmentation returned by your system.
 Please note that as we have only 1 "thing" class and not "stuff" class, we provide indicators only for the building blocks class.
 These simplifications required a custom implementation which is fully compliant with the COCO PQ evaluation code.
+We report COCO PQ (overall quality), COCO SQ (segmentation quality) and COCO RQ (detection/recognition quality) indicators.
+For each of those, the values range from 0 (worst) to 1 (best).
 
-We report 3 indicators:
-
-- **COCO SQ** (segmentation quality): mean IoU between matching shapes (matching shapes in reference and prediction have an IoU > 0.5).  
-  $SQ \in [0,1]$, higher is better.
-- **COCO RQ** (detection/recognition quality): detection F-score for shapes, a predicted shape is a true positive if it as an IoU > 0.5 with a reference shape.  
-  $RQ \in [0,1]$, higher is better.
-- **COCO PQ** (aggregated score): $PQ = SQ * RQ$.  
-  $PQ \in [0,1]$, higher is better.
-
-The indicators are computed as:
-$$
-{\text{PQ}} = \underbrace{\frac{\sum_{(p, g) \in TP} \text{IoU}(p, g)}{\vphantom{\frac{1}{2}}|TP|}}_{\text{segmentation quality (SQ)}} \times \underbrace{\frac{|TP|}{|TP| + \frac{1}{2} |FP| + \frac{1}{2} |FN|}}_{\text{recognition quality (RQ)}}
-$$
-where $TP$ is the set of matching pairs $(p, g) \in (P \times G)$ between predictions ($P$) and reference ($G$), $FP$ is the set of unmatched predicted shapes, and $FN$ is the set of unmatched reference shapes. 
-Shapes are considered as matching when:
-$$
-\text{IoU}(p,g) = \frac{p \cap g}{p \cup g} \gt 0.5.
-$$
-
+For more details about the metric, please refer to the [evaluation details for task 1](https://icdar21-mapseg.github.io/tasks/task1/#metrics).
 
 ### Tool sample usage
 The script supports comparing either:
@@ -138,7 +122,9 @@ Detail:
 ### Metric
 This tool computes the 95% [Haussdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance) (HD95) between two binary images.
 This measures how the outline of the reference area and the predicted area are distant.
-$\text{HD95} \in [0, +\infty]$ and as it is an error measure, lower values indicate better performance.
+HD95 values range from 0 (perfect detection) to large values as it is an error measure.
+
+For more details about the metric, please refer to the [evaluation details for task 2](https://icdar21-mapseg.github.io/tasks/task2/#metrics).
 
 ### Tool sample usage
 The script supports comparing either:
@@ -190,8 +176,10 @@ When processing directories, the output directory will contain the following fil
 
 ### Metric
 This tool computes an aggregate indicator of detection and localization accuracy for each set of points (map sheet).
-More precisely, we compute and plot the F-score (with $\beta=0.5$ to penalize false detections more than missed elements) of the correctly detected points across a range of distance thresholds (50 pixels here).
+More precisely, we compute and plot the F-score (with beta=0.5 to penalize false detections more than missed elements) of the correctly detected points across a range of distance thresholds (50 pixels here).
 The global indicator is the average of all individual scores.
+
+For more details about the metric, please refer to the [evaluation details for task 3](https://icdar21-mapseg.github.io/tasks/task3/#metrics).
 
 
 ### Tool sample usage
@@ -253,4 +241,4 @@ Detail:
 - `nnn-OUTPUT-PRED.clf.pdf `:  
   A visualization of predictions and their error classification against the ground truth.
 
-You can check the [Demo analysis notebook for task 3](notebooks/task3_point_detect_eval_demo.ipynb) for further details about the evaluation tools for task 3.
+You can check the [Demo analysis notebook for task 3](https://github.com/icdar21-mapseg/icdar21-mapseg-eval/blob/main/notebooks/task3_point_detect_eval_demo.ipynb) for further details about the evaluation tools for task 3.
