@@ -241,4 +241,4 @@ Detail:
 - `nnn-OUTPUT-PRED.clf.pdf `:  
   A visualization of predictions and their error classification against the ground truth.
 
-You can check the [Demo analysis notebook for task 3](https://github.com/icdar21-mapseg/icdar21-mapseg-eval/blob/main/notebooks/task3_point_detect_eval_demo.ipynb) for further details about the evaluation tools for task 3.
+You can check the [Demo analysis notebook for task 3](https://github.com/icdar21-mapseg/icdar21-mapseg-eval/blob/main/notebooks/task3_point_detect_eval_demo.ipynb) for further details about the evaluation tools for task 3.  
