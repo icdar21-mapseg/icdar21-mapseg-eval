@@ -4,14 +4,11 @@ from . import iou
 
 
 def _deduce_mode(A, B):
+    label_types = (np.uint16, np.int16, np.uint32, np.int32, np.uint64, np.int64)
     if A.ndim == 2 and B.ndim == 2:
         if A.dtype == "bool" and B.dtype == "bool":
             return "segmentation"
-        elif A.dtype in (np.int16, np.int32, np.int64) and B.dtype in (
-            np.int16,
-            np.int32,
-            np.int64,
-        ):
+        elif A.dtype in label_types and B.dtype in label_types:
             return "labelmap"
         elif A.dtype == "uint8" and B.dtype == "uint8":
             a_label_count = np.unique(A)
