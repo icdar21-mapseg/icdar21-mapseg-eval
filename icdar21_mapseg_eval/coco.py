@@ -3,23 +3,38 @@ from skimage.measure import label as labelize
 from . import iou
 
 
-def _deduce_mode(A, B):
+def _deduce_mode_1(A):
     label_types = (np.uint16, np.int16, np.uint32, np.int32, np.uint64, np.int64)
-    if A.ndim == 2 and B.ndim == 2:
-        if A.dtype == "bool" and B.dtype == "bool":
+    if A.ndim == 2:
+        if A.dtype == "bool":
             return "segmentation"
-        elif A.dtype in label_types and B.dtype in label_types:
+        elif A.dtype in label_types:
             return "labelmap"
-        elif A.dtype == "uint8" and B.dtype == "uint8":
+        elif A.dtype == "uint8":
             a_label_count = np.unique(A)
-            b_label_count = np.unique(B)
-            if len(a_label_count) > 2 or len(b_label_count) > 2:
+            if len(a_label_count) > 2:
                 return "labelmap"
             else:
                 return "segmentation"
-    if A.ndim == 1 and B.ndim == 1:
+    if A.ndim == 1:
         return "iou_array"
     return None
+
+def _deduce_mode(A, B):
+    mode_A = _deduce_mode_1(A)
+    mode_B = _deduce_mode_1(B)
+
+    if not mode_A:
+        raise ValueError(f"Unable to deduce computation mode for COCO metric ({A.ndim}:{A.dtype})")
+    if not mode_B:
+        raise ValueError(f"Unable to deduce computation mode for COCO metric ({B.ndim}:{B.dtype})")
+
+
+    if (mode_A == "iou_array") != (mode_B == "iou_array"):
+        raise ValueError(f"Incompatible deduced mode for COCO metric: {mode_A} vs {mode_B}")
+
+    return mode_A, mode_B
+
 
 
 def _compute_labelmap(A):
@@ -42,24 +57,27 @@ def COCO(A: np.ndarray, B: np.ndarray, mode=None, ignore_zero=True, plot=None):
     A = np.asarray(A)
     B = np.asarray(B)
 
-    mode = mode or _deduce_mode(A, B)
-    if not mode:
-        raise ValueError(f"Unable to deduce computation mode for COCO metric ({A.ndim}:{A.dtype} and {B.dtype}).")
-    if mode not in {"segmentation", "labelmap", "iou_array"}:
+    if mode not in {None, "segmentation", "labelmap", "iou_array"}:
         raise ValueError(f"Invalid mode '{mode}'.")
 
-    if mode == "segmentation":
-        A = _compute_labelmap(A)
-        B = _compute_labelmap(B)
-        mode = "labelmap"
+    if not mode:
+        modeA, modeB = _deduce_mode(A, B)
+    else:
+        modeA = modeB = mode
 
-    if mode == "labelmap":
+
+    if modeA == "segmentation": A = _compute_labelmap(A)
+    if modeB == "segmentation": B = _compute_labelmap(B)
+
+    if modeA != "iou_array" and modeB != "iou_array":
         A, B = _compute_iou(A, B)
-        mode = "iou_array"
 
     if ignore_zero:
         A = A[1:]
         B = B[1:]
+
+    #print(f"Number of labels in A: {A.size}")
+    #print(f"Number of labels in B: {B.size}")
 
     if B.size == 0:
         print("Warning: empty prediction. Setting scores to 0 and skipping plot generation.")
