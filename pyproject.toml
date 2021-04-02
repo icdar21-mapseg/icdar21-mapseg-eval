@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "icdar21-mapseg-eval"
-version = "1.0.1"
+version = "1.0.2"
 description = "Evaluation tools for ICDAR21 Competition on Historical Map Segmentation (MapSeg)."
 authors = ["icdar21-mapseg-contact(at)googlegroups.com"]
 license = "MIT"
