@@ -4,6 +4,9 @@ Welcome to the repository of the evaluation tools for ICDAR 2021 Competition in 
 
 Here you can learn how to install and use the evaluation tools.
 Feel free to report any problem in the issue tracker, and we will fix it as soon as possible.
+If you are looking for a standalone API of the metrics used in these tools, or the material related to the paper *Revisiting the Coco Panoptic Metric to Enable Visual and Qualitative Analysis of Historical Map Instance Segmentation, ICDAR, 2021* see <https://github.com/icdar21-mapseg/coco-pano-ext-demo>.
+
+
 
 ## Installation
 The evaluation tools are packaged as a Python package.
